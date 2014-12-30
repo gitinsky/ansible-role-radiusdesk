@@ -1,0 +1,95 @@
+- name: install requirements
+  apt: name={{ item }} state=present
+  with_items:
+      - language-pack-en-base
+      - nginx
+      - mysql-server
+      - php5-mysql
+      - php5-xcache
+      - php5-cli
+      - php5-gd
+      - php5-curl
+      - subversion
+      - unzip
+
+- name: install php5-xcache
+  apt: name=php5-xcache state=present
+  notify: reload php5-fpm
+  notify: reload apache
+  
+- name: install nginx/sites-enabled/default
+  template: src=nginx/default dest=/etc/nginx/sites-available/default owner=root group=root mode=0644
+  notify: reload nginx
+  
+- include: php-fpm.yml
+  when: rd_php_service == "fpm"
+  
+#====
+- name: download CakePHP 2.5.5 sources
+  command: bash -c "cd /root && wget https://github.com/cakephp/cakephp/archive/2.5.5.tar.gz" creates=/root/2.5.5.tar.gz
+
+- name: create /usr/share/nginx/html folder
+  file: dest=/usr/share/nginx/html
+        state=directory
+        recurse=yes
+
+- name: unpack CakePHP sources
+  command: bash -c "cd /usr/share/nginx/html && tar -xzf /root/2.5.5.tar.gz" creates=/usr/share/nginx/html/cakephp-2.5.5
+
+- name: create cake2 link
+  file: state=link src=/usr/share/nginx/html/cakephp-2.5.5 dest=/usr/share/nginx/html/cake2
+
+- name: checkout rd_cake
+  command: bash -c "cd /usr/share/nginx/html/cake2 && svn checkout svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake ./rd_cake" creates=/usr/share/nginx/html/cake2/rd_cake
+
+# "
+- name: chown -R www-data
+  command: chown -R www-data {{ item }}
+  with_items:
+      - /usr/share/nginx/html/cake2/rd_cake/tmp
+      - /usr/share/nginx/html/cake2/rd_cake/Locale
+      - /usr/share/nginx/html/cake2/rd_cake/webroot/img/flags
+      - /usr/share/nginx/html/cake2/rd_cake/webroot/img/nas
+      - /usr/share/nginx/html/cake2/rd_cake/webroot/img/realms
+      - /usr/share/nginx/html/cake2/rd_cake/webroot/img/dynamic_details
+      - /usr/share/nginx/html/cake2/rd_cake/webroot/img/dynamic_photos
+      - /usr/share/nginx/html/cake2/rd_cake/webroot/files/imagecache
+
+- name: check if rd DB exists
+  command: bash -c "mysqlshow rd"
+  ignore_errors: True
+  register: result
+
+- name: create the DB
+  command: bash -c "mysql -u root -e \"CREATE DATABASE rd; GRANT ALL PRIVILEGES ON rd.* to 'rd'@'127.0.0.1' IDENTIFIED BY 'rd'; GRANT ALL PRIVILEGES ON rd.* to 'rd'@'localhost' IDENTIFIED BY 'rd';\""
+  when: result|failed
+
+- name: check if rd DB is populated
+  command: bash -c "mysqlshow rd | grep acos"
+  ignore_errors: True
+  register: result
+
+- name: populate the DB
+  command: bash -c "mysql -u root rd < /usr/share/nginx/html/cake2/rd_cake/Setup/Db/rd.sql"
+  when: result|failed
+
+- name: modify the paths
+  command: bash -c "cd /usr/share/nginx/html/cake2/rd_cake && grep -R --files-with-matches '/var/www' . | sort | uniq | xargs perl -p -i.bak -e 's/\/var\/www\//\/usr\/share\/nginx\/html\//g'"
+
+- name: checkout rd
+  command: bash -c "cd /usr/share/nginx/html && svn checkout svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd ./rd" creates=/usr/share/nginx/html/rd
+
+- name: checkout extJS
+  command: bash -c "cd /usr/share/nginx/html && svn checkout svn://svn.code.sf.net/p/radiusdesk/code/extjs/ ./" creates=/usr/share/nginx/html/ext-4.2.1-gpl.zip
+
+- name: cp extJS archive
+  command: bash -c "cp /usr/share/nginx/html/ext-4.2.1-gpl.zip /usr/share/nginx/html/rd/" creates=/usr/share/nginx/html/rd/ext-4.2.1-gpl.zip
+
+- name: unpack extJS archive
+  command: bash -c "cd /usr/share/nginx/html/rd && unzip ext-4.2.1-gpl.zip" creates=/usr/share/nginx/html/rd/ext-4.2.1.883
+
+- name: create ext link
+  file: state=link src=/usr/share/nginx/html/rd/ext-4.2.1.883 dest=/usr/share/nginx/html/rd/ext
+
+- name: copy extJS ux examples
+  command: bash -c "cp -R /usr/share/nginx/html/rd/ext/examples/ux /usr/share/nginx/html/rd/ext/src" creates=/usr/share/nginx/html/rd/ext/src/ux

@@ -1,0 +1,36 @@
+- name: cp rd_login_pages
+  command: bash -c "cd /usr/share/nginx/html &&  svn checkout svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_login_pages ./rd_login_pages" creates=/usr/share/nginx/html/rd_login_pages
+
+- name: ln ext > coovachilli
+  command: bash -c "ln -s /usr/share/nginx/html/rd/ext /usr/share/nginx/html/rd_login_pages/desktop/CoovaChilli/ext" creates=/usr/share/nginx/html/rd_login_pages/desktop/CoovaChilli/ext
+
+- name: ln ext > mikrotik
+  command: bash -c "ln -s /usr/share/nginx/html/rd/ext /usr/share/nginx/html/rd_login_pages/desktop/Mikrotik/ext" creates=/usr/share/nginx/html/rd_login_pages/desktop/Mikrotik/ext
+
+- name: ext coovachili 
+  command: bash -c "cd /usr/share/nginx/html/rd_login_pages/mobile/CoovaChilli && tar -xzvf ./touch.tar.gz" creates=/usr/share/nginx/html/rd_login_pages/mobile/CoovaChilli/touch.tar.gz
+
+- name: create symlink for touch
+  file: state=link src=/usr/share/nginx/html/rd_login_pages/mobile/Mikrotik/touch dest=/usr/share/nginx/html/rd_login_pages/mobile/CoovaChilli/touch
+        force=yes
+  tags:
+      - debug
+
+- name: extract coova-m 
+  command: bash -c "cd /usr/share/nginx/html/rd_login_pages/desktop/CoovaChilli && tar -xzvf build.d.tar.gz" creates=/usr/share/nginx/html/rd_login_pages/desktop/CoovaChilli/build.d.tar.gz
+
+- name: extract coova-m
+  command: bash -c "cd /usr/share/nginx/html/rd_login_pages/mobile/CoovaChilli && tar -xzvf build.m.tar.gz" creates=/usr/share/nginx/html/rd_login_pages/mobile/CoovaChilli/build.m.tar.gz
+
+- name: extract coova-m
+  command: bash -c "cd /usr/share/nginx/html/rd_login_pages/desktop/Mikrotik && tar -xzvf build.d.tar.gz" creates=/usr/share/nginx/html/rd_login_pages/desktop/Mikrotik/build.d.tar.gz
+
+- name: extract coova-m
+  command: bash -c "cd /usr/share/nginx/html/rd_login_pages/mobile/Mikrotik  && tar -xzvf build.m.tar.gz"  creates=/usr/share/nginx/html/rd_login_pages/mobile/Mikrotik/build.m.tar.gz
+
+- name: create symlinks
+  file: state=link src=. dest=/usr/share/nginx/html/rd_login_pages/desktop/CoovaChilli/{{ item }}
+  with_items:
+      - build
+      - production
+      - CoovaChilli

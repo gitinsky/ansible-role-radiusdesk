@@ -1,0 +1,47 @@
+- name: install build-essential, libmysqlclient-dev, libperl-dev, libssl-dev
+  apt: name={{ item }} state=present
+  with_items:
+      - build-essential
+      - libmysqlclient-dev
+      - libperl-dev
+      - libssl-dev
+
+- name: download FreeRADIUS sources
+  command: bash -c "cd /root && wget ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-2.2.5.tar.gz || wget ftp://ftp.freeradius.org/pub/freeradius/old/freeradius-server-2.2.5.tar.gz" creates=/root/freeradius-server-2.2.5.tar.gz
+
+- name: unpack FreeRADIUS sources
+  command: bash -c "cd /root && tar -xzf freeradius-server-2.2.5.tar.gz" creates=/root/freeradius-server-2.2.5
+
+#==
+- name: apply dynamic patch
+  command: bash -c "cd /root/freeradius-server-2.2.5 && patch -p1 < /usr/share/nginx/html/cake2/rd_cake/Setup/Radius/rlm_raw_patch" creates=/root/freeradius-server-2.2.5/src/modules/stable.rej
+  ignore_errors: True
+  register: result
+  when: freeradius_type == "dynamic"
+  
+- name: apply extra fix after a dynamic patch
+  command: bash -c "grep rlm_raw /root/freeradius-server-2.2.5/src/modules/stable || echo 'rlm_raw' >> /root/freeradius-server-2.2.5/src/modules/stable"
+  when: result|failed and freeradius_type == "dynamic"
+#==
+
+- name: configure FreeRADIUS
+  command: bash -c "cd /root/freeradius-server-2.2.5 && ./configure" creates=/root/freeradius-server-2.2.5/Make.inc
+
+- name: make FreeRADIUS
+  command: bash -c "cd /root/freeradius-server-2.2.5 && make" creates=/root/freeradius-server-2.2.5/src/lib/vqp.o
+
+- name: install FreeRADIUS
+  command: bash -c "cd /root/freeradius-server-2.2.5 && make install && ldconfig" creates=/usr/local/bin/radclient
+
+#"
+
+- name: install npm packages
+  npm: name={{ item }} global=yes
+  with_items:
+      - tail
+      - connect
+      - mysql
+      - forever
+      
+- name: install npm socket.io v0.9.x
+  npm: name=socket.io global=yes version=0.9.x

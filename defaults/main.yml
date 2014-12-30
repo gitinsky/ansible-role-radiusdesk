@@ -1,0 +1,6 @@
+---
+rd_php_service: fpm
+# rd_php_service: apache
+
+freeradius_type: "dynamic"
+# freeradius_type: "static"

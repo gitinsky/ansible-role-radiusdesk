@@ -1,0 +1,21 @@
+---
+- name: install php5-fpm
+  apt: name=php5-fpm state=present
+
+- name: configure php5-fpm socket
+  lineinfile: dest=/etc/php5/fpm/pool.d/www.conf
+              regexp='^(listen =)'
+              line='\1 /var/run/php5-fpm.sock' backrefs=yes
+  notify: reload php5-fpm
+
+- name: configure php5-fpm socket owner
+  lineinfile: dest=/etc/php5/fpm/pool.d/www.conf
+              regexp='^(;)(listen.owner = www-data)'
+              line='\2' backrefs=yes
+  notify: reload php5-fpm
+
+- name: configure php5-fpm socket group
+  lineinfile: dest=/etc/php5/fpm/pool.d/www.conf
+              regexp='^(;)(listen.group = www-data)'
+              line='\2' backrefs=yes
+  notify: reload php5-fpm

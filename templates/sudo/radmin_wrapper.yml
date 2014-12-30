@@ -1,0 +1,1 @@
+%admin ALL=(ALL) ALL www-data ALL = NOPASSWD:/usr/share/nginx/html/cake2/rd_cake/Setup/Scripts/radmin_wrapper.pl

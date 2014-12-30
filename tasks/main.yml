@@ -1,0 +1,7 @@
+---
+- include: radiusdesk.yml
+- include: freeradius.yml
+- include: setupfr.yml
+- include: 1.yml
+- include: 2.yml
+- include: 3.yml

@@ -1,0 +1,42 @@
+- name:  mv raddb.orig
+  command: bash -c "mv /usr/local/etc/raddb /usr/local/etc/raddb.orig" creates=/usr/local/etc/raddb.orig
+
+- name: cp raddb_rd.tar.gz > /usr/local/etc/
+  command: bash -c "cp /usr/share/nginx/html/cake2/rd_cake/Setup/Radius/raddb_rd.tar.gz /usr/local/etc/" creates=/etc/init.d/radiusd
+
+- name: cp checkrad > /usr/local/sbin/checkrad
+  command: bash -c "cp /usr/share/nginx/html/cake2/rd_cake/Setup/Radius/checkrad /usr/local/sbin/" creates=/etc/init.d/radiusd
+
+- name: ext raddb_rd.tar.gz
+  command: bash -c "cd /usr/local/etc/ && tar -xzvf raddb_rd.tar.gz" creates=/etc/init.d/radiusd
+
+- name: chmod 644 dictionary
+  command: bash -c "chmod 644 /usr/local/etc/raddb/dictionary && ldconfig" creates=/etc/init.d/radiusd
+  
+- name: cp rc.radiusd > radiusd
+  command: bash -c "cp /usr/local/sbin/rc.radiusd /etc/init.d/radiusd" creates=/etc/init.d/radiusd 
+
+
+#== dynamyc "
+
+- name: create sites-enabled raddb symlink
+  file: state=link src=../sites-available/dynamic-clients dest=/usr/local/etc/raddb/sites-enabled/dynamic-clients force=yes
+  when: freeradius_type == "dynamic"
+
+# - name: create sites-enabled raddb symlink
+#   command: ln -vs ../sites-available/dynamic-clients /usr/local/etc/raddb/sites-enabled/dynamic-clients creates=/etc/init.d/radiusd
+#   when: freeradius_type == "dynamic"
+  
+- name: put dynamic-clients config file
+  template: src=raddb/dynamic-clients.yml dest=/usr/local/etc/raddb/sites-available/dynamic-clients
+            owner=root group=root mode=0644
+  when: freeradius_type == "dynamic"
+
+- name: put dynamic-clients config file
+  template: src=raddb/raw.yml dest=/usr/local/etc/raddb/modules/raw
+            owner=root group=root mode=0644
+  when: freeradius_type == "dynamic"
+  
+- name: Tell FreeRADIUS to instantiate the raw module upon start-up
+  command: bash -c "sed -Ei.bk 's/#raw/raw/' /usr/local/etc/raddb/radiusd.conf" creates=/usr/local/etc/raddb/radiusd.conf.bk
+  when: freeradius_type == "dynamic"

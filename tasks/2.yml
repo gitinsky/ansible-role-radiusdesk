@@ -1,0 +1,8 @@
+- name: cp nodejs-socket-io > /etc/init.d
+  command: bash -c " cp /usr/share/nginx/html/cake2/rd_cake/Setup/Node.js/nodejs-socket-io /etc/init.d" created=/etc/init.d/nodejs-socket-io
+
+- name: chmod 755
+  command: bash -c "chmod 755 /etc/init.d/nodejs-socket-io"
+
+- name: update rc
+  command: bash -c "update-rc.d nodejs-socket-io start 80 2 3 4 5 . stop 20 0 1 6 ."

@@ -1,0 +1,11 @@
+- name: cp rc.radiusd > radiusd
+  command: bash -c "cp /usr/local/sbin/rc.radiusd /etc/init.d/radiusd" creates=/etc/init.d/radiusd 
+
+- name: update-rc.d
+  command: bash -c "update-rc.d radiusd start 99 2 3 4 5 . stop 20 0 1 6 ."
+
+- name: "sudoers: radmin_wrapper"
+  template: src=sudo/radmin_wrapper.yml dest=/etc/sudoers.d/radmin_wrapper
+        owner=root
+        group=root
+        mode=0440

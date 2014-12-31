@@ -1,11 +1,14 @@
 ---
- - name: reload nginx
-   service: name=nginx state=reloaded
+- name: reload nginx
+  service: name=nginx state=reloaded
 
- - name: reload php5-fpm
-   service: name=php5-fpm state=reloaded
-   when: rd_php_service == "fpm"
+- name: reload php5-fpm
+  service: name=php5-fpm state=reloaded
+  when: rd_php_service == "fpm"
 
- - name: reload apache
-   service: name=apache2 state=reloaded
-   when: rd_php_service == "apache"
+- name: reload apache
+  service: name=php5-fpm state=reloaded
+  when: rd_php_service == "apache"
+   
+- name: reload monit
+  service: name=monit state=reloaded

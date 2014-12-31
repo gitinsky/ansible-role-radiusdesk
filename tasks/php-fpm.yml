@@ -19,3 +19,17 @@
               regexp='^(;)(listen.group = www-data)'
               line='\2' backrefs=yes
   notify: reload php5-fpm
+
+- name: install monit
+  apt: name=monit
+  tags:
+      - monit
+  
+- name: monit config for rd
+  template: src=monit/rd.conf dest=/etc/monit/conf.d/rd.conf
+  notify: reload monit
+  tags:
+      - monit
+
+
+  

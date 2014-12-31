@@ -4,3 +4,9 @@ rd_php_service: fpm
 
 freeradius_type: "dynamic"
 # freeradius_type: "static"
+
+rd_monit_emails:
+    - example@example.com
+
+rd_monit_username: admin
+rd_monit_password: monit

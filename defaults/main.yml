@@ -10,3 +10,6 @@ rd_monit_emails:
 
 rd_monit_username: admin
 rd_monit_password: monit
+
+rd_nginx_http_port: 80
+rd_nginx_https_port: 443

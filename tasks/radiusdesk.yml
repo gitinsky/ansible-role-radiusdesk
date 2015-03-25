@@ -1,5 +1,6 @@
 - name: add repository for php 5.5
   apt_repository: repo='ppa:ondrej/php5'
+  when: "ansible_distribution == 'Ubuntu' and ansible_distribution_version == '12.04'"
 
 - name: install requirements
   apt: name={{ item }} state=present

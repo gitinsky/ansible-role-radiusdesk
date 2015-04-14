@@ -7,31 +7,31 @@
       - libssl-dev
 
 - name: download FreeRADIUS sources
-  command: bash -c "cd /root && wget ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-2.2.5.tar.gz || wget ftp://ftp.freeradius.org/pub/freeradius/old/freeradius-server-2.2.5.tar.gz" creates=/root/freeradius-server-2.2.5.tar.gz
+  command: bash -c "cd /root && wget ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-{{ freeradius_server_version }}.tar.gz || wget ftp://ftp.freeradius.org/pub/freeradius/old/freeradius-server-{{ freeradius_server_version }}.tar.gz" creates=/root/freeradius-server-{{ freeradius_server_version }}.tar.gz
 
 - name: unpack FreeRADIUS sources
-  command: bash -c "cd /root && tar -xzf freeradius-server-2.2.5.tar.gz" creates=/root/freeradius-server-2.2.5
+  command: bash -c "cd /root && tar -xzf freeradius-server-{{ freeradius_server_version }}.tar.gz" creates=/root/freeradius-server-{{ freeradius_server_version }}
 
 #==
 - name: apply dynamic patch
-  command: bash -c "cd /root/freeradius-server-2.2.5 && patch -p1 < /usr/share/nginx/html/cake2/rd_cake/Setup/Radius/rlm_raw_patch" creates=/root/freeradius-server-2.2.5/src/modules/stable.rej
+  command: bash -c "cd /root/freeradius-server-{{ freeradius_server_version }} && patch -p1 < /usr/share/nginx/html/cake2/rd_cake/Setup/Radius/rlm_raw_patch" creates=/root/freeradius-server-{{ freeradius_server_version }}/src/modules/stable.rej
   ignore_errors: True
   register: result
   when: freeradius_type == "dynamic"
   
 - name: apply extra fix after a dynamic patch
-  command: bash -c "grep rlm_raw /root/freeradius-server-2.2.5/src/modules/stable || echo 'rlm_raw' >> /root/freeradius-server-2.2.5/src/modules/stable"
+  command: bash -c "grep rlm_raw /root/freeradius-server-{{ freeradius_server_version }}/src/modules/stable || echo 'rlm_raw' >> /root/freeradius-server-{{ freeradius_server_version }}/src/modules/stable"
   when: result|failed and freeradius_type == "dynamic"
 #==
 
 - name: configure FreeRADIUS
-  command: bash -c "cd /root/freeradius-server-2.2.5 && ./configure" creates=/root/freeradius-server-2.2.5/Make.inc
+  command: bash -c "cd /root/freeradius-server-{{ freeradius_server_version }} && ./configure" creates=/root/freeradius-server-{{ freeradius_server_version }}/Make.inc
 
 - name: make FreeRADIUS
-  command: bash -c "cd /root/freeradius-server-2.2.5 && make" creates=/root/freeradius-server-2.2.5/src/lib/vqp.o
+  command: bash -c "cd /root/freeradius-server-{{ freeradius_server_version }} && make" creates=/root/freeradius-server-{{ freeradius_server_version }}/src/lib/vqp.o
 
 - name: install FreeRADIUS
-  command: bash -c "cd /root/freeradius-server-2.2.5 && make install && ldconfig" creates=/usr/local/bin/radclient
+  command: bash -c "cd /root/freeradius-server-{{ freeradius_server_version }} && make install && ldconfig" creates=/usr/local/bin/radclient
 
 #"
 

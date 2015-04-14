@@ -7,7 +7,7 @@
   when: rd_php_service == "fpm"
 
 - name: reload apache
-  service: name=php5-fpm state=reloaded
+  service: name=apache2 state=reloaded
   when: rd_php_service == "apache"
    
 - name: reload monit

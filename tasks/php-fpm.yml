@@ -31,5 +31,14 @@
   tags:
       - monit
 
-
-  
+- name: modify php.ini
+  lineinfile: dest=/etc/php5/fpm/php.ini
+              backup=yes
+              regexp='^({{ item.key }}).*'
+              line='\1 = {{ item.value }}'
+              backrefs=yes
+  with_items:
+    - { key: 'max_execution_time', value: '300'  }
+    - { key: 'memory_limit',       value: '512M' }
+  notify: reload php5-fpm
+  tags: phptimeouts

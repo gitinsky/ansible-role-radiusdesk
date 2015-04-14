@@ -13,3 +13,5 @@ rd_monit_password: monit
 
 rd_nginx_http_port: 80
 rd_nginx_https_port: 443
+
+rd_php_time_limit: 300

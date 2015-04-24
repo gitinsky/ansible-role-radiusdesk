@@ -44,10 +44,21 @@
 - name: create cake2 link
   file: state=link src=/usr/share/nginx/html/cakephp-2.5.5 dest=/usr/share/nginx/html/cake2
 
-- name: checkout rd_cake
-  command: bash -c "cd /usr/share/nginx/html/cake2 && svn checkout svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake ./rd_cake" creates=/usr/share/nginx/html/cake2/rd_cake
+- name: checkout rd_cake, latest
+  subversion: repo=svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake
+              username=dvdwalt
+              dest=/usr/share/nginx/html/cake2/rd_cake
+  when: rd_svn_revision == 'latest'
+  ignore_errors: true
 
-# "
+- name: checkout rd_cake, latest
+  subversion: repo=svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake
+              username=dvdwalt
+              dest=/usr/share/nginx/html/cake2/rd_cake
+              revision={{ rd_svn_revision }}
+  when: rd_svn_revision != 'latest'
+  ignore_errors: true
+
 - name: chown -R www-data
   command: chown -R www-data {{ item }}
   with_items:

@@ -17,3 +17,6 @@ rd_nginx_https_port: 443
 rd_php_time_limit: 300
 
 freeradius_server_version: 2.2.5
+
+rd_svn_revision: 1127
+# rd_svn_revision: latest

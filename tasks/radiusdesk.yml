@@ -90,9 +90,6 @@
               dest=/usr/share/nginx/html/rd
               revision={{ rd_svn_revision if rd_svn_revision != 'latest' else 'HEAD' }}
 
-# - name: checkout extJS
-#   command: bash -c "cd /usr/share/nginx/html && svn checkout svn://svn.code.sf.net/p/radiusdesk/code/extjs/ ./" creates=/usr/share/nginx/html/ext-4.2.1-gpl.zip
-
 - name: checkout extJS
   subversion: repo=svn://svn.code.sf.net/p/radiusdesk/code/extjs
               username=dvdwalt

@@ -44,19 +44,11 @@
 - name: create cake2 link
   file: state=link src=/usr/share/nginx/html/cakephp-2.5.5 dest=/usr/share/nginx/html/cake2
 
-- name: checkout rd_cake, latest
-  subversion: repo=svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake
+- name: checkout rd_cake
+  subversion: repo=svn://svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake
               username=dvdwalt
               dest=/usr/share/nginx/html/cake2/rd_cake
-  when: rd_svn_revision == 'latest'
-  ignore_errors: true
-
-- name: checkout rd_cake, latest
-  subversion: repo=svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd_cake
-              username=dvdwalt
-              dest=/usr/share/nginx/html/cake2/rd_cake
-              revision={{ rd_svn_revision }}
-  when: rd_svn_revision != 'latest'
+              revision={{ rd_svn_revision if rd_svn_revision != 'latest' else 'HEAD' }}
   ignore_errors: true
 
 - name: chown -R www-data
@@ -93,13 +85,22 @@
   command: bash -c "cd /usr/share/nginx/html/cake2/rd_cake && grep -R --files-with-matches '/var/www' . | sort | uniq | xargs perl -p -i.bak -e 's/\/var\/www\//\/usr\/share\/nginx\/html\//g'"
 
 - name: checkout rd
-  command: bash -c "cd /usr/share/nginx/html && svn checkout svn://dvdwalt@svn.code.sf.net/p/radiusdesk/code/trunk/rd ./rd" creates=/usr/share/nginx/html/rd
+  subversion: repo=svn://svn.code.sf.net/p/radiusdesk/code/trunk/rd
+              username=dvdwalt
+              dest=/usr/share/nginx/html/rd
+              revision={{ rd_svn_revision if rd_svn_revision != 'latest' else 'HEAD' }}
+
+# - name: checkout extJS
+#   command: bash -c "cd /usr/share/nginx/html && svn checkout svn://svn.code.sf.net/p/radiusdesk/code/extjs/ ./" creates=/usr/share/nginx/html/ext-4.2.1-gpl.zip
 
 - name: checkout extJS
-  command: bash -c "cd /usr/share/nginx/html && svn checkout svn://svn.code.sf.net/p/radiusdesk/code/extjs/ ./" creates=/usr/share/nginx/html/ext-4.2.1-gpl.zip
+  subversion: repo=svn://svn.code.sf.net/p/radiusdesk/code/extjs
+              username=dvdwalt
+              dest=/usr/share/nginx/html/extjs
+              revision={{ rd_svn_revision if rd_svn_revision != 'latest' else 'HEAD' }}
 
 - name: cp extJS archive
-  command: bash -c "cp /usr/share/nginx/html/ext-4.2.1-gpl.zip /usr/share/nginx/html/rd/" creates=/usr/share/nginx/html/rd/ext-4.2.1-gpl.zip
+  command: bash -c "cp /usr/share/nginx/html/extjs/ext-4.2.1-gpl.zip /usr/share/nginx/html/rd/" creates=/usr/share/nginx/html/rd/ext-4.2.1-gpl.zip
 
 - name: unpack extJS archive
   command: bash -c "cd /usr/share/nginx/html/rd && unzip ext-4.2.1-gpl.zip" creates=/usr/share/nginx/html/rd/ext-4.2.1.883
